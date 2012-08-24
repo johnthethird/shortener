@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(:version => 20120214023758) do
     t.string   "url",                                     :null => false
     t.string   "unique_key", :limit => 10,                :null => false
     t.integer  "use_count",                :default => 0, :null => false
+    t.datetime "expires_at"
     t.datetime "created_at",                              :null => false
     t.datetime "updated_at",                              :null => false
   end

@@ -15,8 +15,8 @@ shared_examples_for "wrong code" do
   end
 end
 
-# describe Shortener::ShortenedUrlsController do
-#   let(:short_url) { Shortener::ShortenedUrl.generate("www.doorkeeperhq.com") }
+#describe "Controller" do
+#  let(:short_url) { Shortener::ShortenedUrl.generate("www.doorkeeperhq.com") }
 
 #   describe "GET show with actual code" do
 #     let(:code) { short_url.unique_key}
@@ -37,4 +37,4 @@ end
 #     let(:code) { "-" }
 #     it_should_behave_like "wrong code"
 #   end
-# end
+#end

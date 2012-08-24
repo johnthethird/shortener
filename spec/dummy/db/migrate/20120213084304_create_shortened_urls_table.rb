@@ -14,6 +14,8 @@ class CreateShortenedUrlsTable < ActiveRecord::Migration
       # how many times the link has been clicked
       t.integer :use_count, :null => false, :default => 0
 
+      t.datetime :expires_at
+
       t.timestamps
     end
 

@@ -6,12 +6,13 @@ describe Shortener::ShortenedUrl do
   it { should validate_presence_of :url }
 
   shared_examples_for "shortened url" do
-    let(:short_url) { Shortener::ShortenedUrl.generate!(long_url, owner) }
+    let(:short_url) { Shortener::ShortenedUrl.generate!(long_url, owner, expires_at) }
     it "should be shortened" do
       short_url.should_not be_nil
       short_url.url.should == expected_long_url
       short_url.unique_key.length.should == 5
       short_url.owner.should == owner
+      short_url.expires_at.should == expires_at
     end
   end
 
@@ -19,6 +20,7 @@ describe Shortener::ShortenedUrl do
     let(:long_url) { "http://www.doorkeeperhq.com/" }
     let(:expected_long_url) { long_url }
     let(:owner) { nil }
+    let(:expires_at) { nil }
     it_should_behave_like "shortened url"
   end
 
@@ -26,6 +28,7 @@ describe Shortener::ShortenedUrl do
     let(:long_url) { "www.doorkeeperhq.com" }
     let(:expected_long_url) { "http://www.doorkeeperhq.com/" }
     let(:owner) { nil }
+    let(:expires_at) { nil }
     it_should_behave_like "shortened url"
   end
 
@@ -33,6 +36,7 @@ describe Shortener::ShortenedUrl do
     let(:long_url) { "http://www.doorkeeper.jp/%E6%97%A5%E6%9C%AC%E8%AA%9E" }
     let(:expected_long_url) { long_url }
     let(:owner) { nil }
+    let(:expires_at) { nil }
     it_should_behave_like "shortened url"
   end
 
@@ -40,12 +44,42 @@ describe Shortener::ShortenedUrl do
     let(:long_url) { "http://www.doorkeeperhq.com/" }
     let(:expected_long_url) { long_url }
     let(:owner) { User.create }
+    let(:expires_at) { nil }
     it_should_behave_like "shortened url"
+  end
+
+  context "unexpired url" do
+    let(:long_url) { "www.doorkeeperhq.com" }
+    let(:expected_long_url) { "http://www.doorkeeperhq.com/" }
+    let(:owner) { nil }
+    let(:expires_at) { Time.now + 1.week }
+    it_should_behave_like "shortened url"
+  end
+
+  context "expired url" do
+    let(:long_url) { "www.doorkeeperhq.com" }
+    let(:expected_long_url) { "http://www.doorkeeperhq.com/" }
+    let(:owner) { nil }
+    let(:expires_at) { Time.now - 1.week }
+    it_should_behave_like "shortened url"
+  end
+
+  context "expires_at scope" do
+    before {
+      @expired_url   = Shortener::ShortenedUrl.generate!("http://www.doorkeeperhq.com/expired", nil, Time.zone.now - 1.week)
+      @unexpired_url = Shortener::ShortenedUrl.generate!("http://www.doorkeeperhq.com/unexpired", nil, Time.zone.now + 1.week)
+    }
+    it "not find expired url via scope" do
+      Shortener::ShortenedUrl.find_for_redirect(@expired_url.unique_key).should be_nil
+    end
+    it "find unexpired url via scope" do
+      Shortener::ShortenedUrl.find_for_redirect(@unexpired_url.unique_key).should == @unexpired_url
+    end
   end
 
   context "existing shortened URL" do
     before { @existing = Shortener::ShortenedUrl.generate!("http://www.doorkeeperhq.com/") }
-    it "should look up exsiting URL" do
+    it "should look up existing URL" do
       Shortener::ShortenedUrl.generate!("http://www.doorkeeperhq.com/").should == @existing
       Shortener::ShortenedUrl.generate!("www.doorkeeperhq.com").should == @existing
     end

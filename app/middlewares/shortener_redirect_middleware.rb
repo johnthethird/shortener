@@ -5,7 +5,7 @@ class ShortenerRedirectMiddleware
 
   def call(env)
 
-    if (env["PATH_INFO"] =~ /^\/s\/(\w*)$/) && (shortener = ::Shortener::ShortenedUrl.find_by_unique_key($1))
+    if (env["PATH_INFO"] =~ /^\/s\/(\w*)$/) && (shortener = ::Shortener::ShortenedUrl.find_for_redirect($1))
       [301, {'Location' => shortener.url}, []]
     else
       @app.call(env)
