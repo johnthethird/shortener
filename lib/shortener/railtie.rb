@@ -3,7 +3,7 @@ require "shortener"
 
 class Shortener::Railtie < ::Rails::Railtie #:nodoc:
   initializer "shortener.register.active.record.extension" do |app|
-    app.config.middleware.use "Shortener::ShortenerRedirectMiddleware"
+    app.config.middleware.use "ShortenerRedirectMiddleware"
 
     ActiveSupport.on_load :active_record do
       extend Shortener::ActiveRecordExtension
