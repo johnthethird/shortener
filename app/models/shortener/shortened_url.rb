@@ -33,7 +33,7 @@ class Shortener::ShortenedUrl < ActiveRecord::Base
     # so check the datastore
     cleaned_url = clean_url(orig_url)
     scope = owner ? owner.shortened_urls : self
-    shortened_url = scope.find_or_create_by(:url => cleaned_url)
+    shortened_url = scope.where(:url => cleaned_url).first_or_create
     shortened_url.expires_at = expires_at
     shortened_url.save
     shortened_url
@@ -50,13 +50,19 @@ class Shortener::ShortenedUrl < ActiveRecord::Base
 
   private
 
+  # the create method changed in rails 4...
+  if Rails::VERSION::MAJOR >= 4
+   CREATE_METHOD_NAME = "create_record"
+  else
+   CREATE_METHOD_NAME = "create"
+  end
   # we'll rely on the DB to make sure the unique key is really unique.
   # if it isn't unique, the unique index will catch this and raise an error
-  def create
+  define_method CREATE_METHOD_NAME do
     count = 0
     begin
       self.unique_key = generate_unique_key
-      super
+      super()
     rescue ActiveRecord::RecordNotUnique, ActiveRecord::StatementInvalid => err
       if (count +=1) < 5
         logger.info("[Shortener] retrying with different unique key")
